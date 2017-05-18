@@ -2,45 +2,44 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+from datetime import datetime as dt
 import sys
 from mpl_toolkits.basemap import Basemap
 
 
+def parseDate(date):
+	if date == '':
+		return None
+	else:
+		return dt.strptime(date, '%m/%d/%Y %H:%M:%S.%f').date()
+		#1/1/2016  12:29:43 PM
+
+
 def readAndFilterData():
 	#creating pandas dataframe from csv file
-	scoot_rides_test_data = pd.read_csv(sys.argv[1])
-	
-	
-	lat = scoot_rides_test_data['start_lat'].tolist()
-	lon = scoot_rides_test_data['start_lon'].tolist()
-
-	drawMap(lat, lon)
+	scoot_rides_test_data = pd.read_csv('scoot_rides_test.csv')
+	for date in scoot_rides_test_data['start_time_local'][:10]:
+		print(parseDate(date))
 
 
+	for date in scoot_rides_test_data['end_time_local'][:10]:
+		print(parseDate(date))
+		#print(date)
 
-
-
-
-def drawMap(lat, lon):
-	# Create a map on which to draw.  We're using a mercator projection, and showing the whole world.
-	m = Basemap(projection='merc',llcrnrlat=-80,urcrnrlat=80,llcrnrlon=-180,urcrnrlon=180,lat_ts=20,resolution='c')
-	# Draw coastlines, and the edges of the map.
-	m.drawcoastlines()
-	m.drawmapboundary()
-	# Convert latitude and longitude to x and y coordinates
-	x, y = m(lat, lon)
-	# Use matplotlib to draw the points onto the map.
-	m.scatter(x,y,1,marker='o',color='red')
-	# Show the plot.
-	plt.show()
+	for date in scoot_rides_test_data['scoot_moved'][:10]:
+		print(date)
 
 
 
 
-if len(sys.argv) > 1:
+
+
+
+
+if len(sys.argv) == 1:
 	readAndFilterData()
 else:
-	print("usage: scoot.py <path-to-csv-file>")
+	print("usage: scoot.py")
 
 
 
