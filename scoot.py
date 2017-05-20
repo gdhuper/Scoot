@@ -19,6 +19,8 @@ scoot_rides_test_df = pd.read_csv('scoot_rides_test.csv')
 #another dataframe to store records whenre scoot_moved = True
 scoot_rides_if_moved_df = scoot_rides_test_df[scoot_rides_test_df['scoot_moved'] == 't']
 pd.options.mode.chained_assignment = None
+scoot_rides_if_moved_df =scoot_rides_if_moved_df.dropna(axis=0, how='any')
+
 
 #parse date from string object
 def parseDate(datetime, groupBy):
@@ -38,18 +40,19 @@ def parseDate(datetime, groupBy):
 			print("Select valid entity: <h - hours, d - day, w - weekday>")
 
 
-#Helper method to get miles from odometer reading
+#Helper function to get miles from odometer reading
 def getMiles(start_odometer, end_odometer):
 	return abs(end_odometer - start_odometer)
 
 
-#Helper method to standardize rides on a day in a week
+#Helper function to standardize rides on a day in a week
 def standardizeWeekCount(value):
 	startDate = parseDate(scoot_rides_test_df['start_time_local'].iloc[0], "d")
 	endDate = parseDate(scoot_rides_test_df['start_time_local'].iloc[-1], "d")
 	total_weeks = rrule.rrule(rrule.WEEKLY, dtstart=startDate, until=endDate)
 	return int(value / total_weeks.count())
 
+# Helper function to standardize rides per hour
 def standardizeRidesPerHour(rides):
 	return int(rides / 24)
 
@@ -62,7 +65,6 @@ def getRideCountByDay(groupBy):
 	if groupBy == "d":
 		return pd.value_counts(scoot_rides_if_moved_df['start_date'].values).sort_index()
 	elif groupBy == "h":
-		#return pd.value_counts(scoot_rides_if_moved_df['start_date'].values).sort_index()
 		temp = pd.value_counts(scoot_rides_if_moved_df['start_date'].values).sort_index()
 		temp = temp.to_frame()
 		temp.loc[:, 0] = temp[0].apply(lambda x: standardizeRidesPerHour(x))
@@ -74,59 +76,59 @@ def getRideCountByDay(groupBy):
 		return temp
 
 def geRideCountByUser():
-	scoot_rides_by_user_df = scoot_rides_test_df[scoot_rides_test_df['scoot_moved'] == 't']
-	scoot_rides_test_df['user_count'] = pd.value_counts(scoot_rides_test_df['user_id'].values)
-	print(pd.value_counts(scoot_rides_test_df['user_id'].values))
-	return pd.value_counts(scoot_rides_test_df['user_id'].values)
+	scoot_rides_if_moved_df['user_count'] = pd.value_counts(scoot_rides_if_moved_df['user_id'].values)
+	return pd.value_counts(scoot_rides_if_moved_df['user_id'].values)
 
 
 def getCountByVehicleType():
-	scoot_rides_by_user_df = scoot_rides_test_df[scoot_rides_test_df['scoot_moved'] == 't']
-	scoot_rides_test_df['count_by_vehicle_type'] = pd.value_counts(scoot_rides_test_df['vehicle_type_id'].values)
-	print(pd.value_counts(scoot_rides_test_df['vehicle_type_id'].values))
+	scoot_rides_if_moved_df['count_by_vehicle_type'] = pd.value_counts(scoot_rides_if_moved_df['vehicle_type_id'].values)
 	return pd.value_counts(scoot_rides_test_df['vehicle_type_id'].values)
 
 
 def getTotalMileageByVehicleType():
-	scoot_rides_by_user_df = scoot_rides_test_df[scoot_rides_test_df['scoot_moved'] == 't']
-	scoot_rides_by_user_df =scoot_rides_by_user_df.dropna(axis=0, how='any')
-	scoot_rides_by_user_df['mileage'] = scoot_rides_by_user_df.apply(lambda row: getMiles(row['start_odometer'], row['end_odometer']), axis=1)
-	print(scoot_rides_by_user_df.groupby(by=['vehicle_type_id'])['mileage'].sum())
+	scoot_rides_if_moved_df['mileage'] = scoot_rides_if_moved_df.apply(lambda row: getMiles(row['start_odometer'], row['end_odometer']), axis=1)
+	return scoot_rides_if_moved_df.groupby(by=['vehicle_type_id'])['mileage'].sum()
 	
 
 def getRideMileageDistribution():
-	scoot_rides_by_user_df = scoot_rides_test_df[scoot_rides_test_df['scoot_moved'] == 't']
-	scoot_rides_by_user_df =scoot_rides_by_user_df.dropna(axis=0, how='any')
-	scoot_rides_by_user_df['mileage'] = scoot_rides_by_user_df.apply(lambda row: getMiles(row['start_odometer'], row['end_odometer']), axis=1)
-	print(scoot_rides_by_user_df['mileage'])
+	scoot_rides_if_moved_df['mileage'] = scoot_rides_if_moved_df.apply(lambda row: getMiles(row['start_odometer'], row['end_odometer']), axis=1)
+	return scoot_rides_if_moved_df['mileage']
 
 
 def getTopLocsByVolume(numberOfLocs):
-	scoot_rides_by_location_df = scoot_rides_test_df[scoot_rides_test_df['scoot_moved'] == 't']
-	scoot_rides_by_location_df =scoot_rides_by_location_df.dropna(axis=0, how='any')
-	print(pd.value_counts(scoot_rides_by_location_df['start_location_id']).head(5))
-	print(pd.value_counts(scoot_rides_by_location_df['end_location_id']).head(5))
-
-def getLocsByTime(hour):
-	scoot_rides_test_df = scoot_rides_test_df[scoot_rides_test_df['scoot_moved'] == 't']
-	scoot_rides_test_df =scoot_rides_test_df.dropna(axis=0, how='any')
+	top_start_loc = pd.value_counts(scoot_rides_if_moved_df['start_location_id']).head(numberOfLocs)
+	top_end_loc = pd.value_counts(scoot_rides_if_moved_df['end_location_id']).head(numberOfLocs)
+	return top_start_loc, top_end_loc
 
 
+def getLatLong():
+	return scoot_rides_if_moved_df['start_lat'], scoot_rides_if_moved_df['start_lon']
+	
 	
 
 
 
-if len(sys.argv) > 1:
-	rides_per_day = getRideCountByDay(sys.argv[1])
-	print(rides_per_day)
-	#print(rides_per_day)
-	#geRideCountByUser()
-	#getCountByVehicleType()
-	#getTotalMileageByVehicleType()
-	#getRideMileageDistribution()
-	#getTopLocsByVolume(4)
-else:
-	print("usage: scoot.py <group-by>")
+
+
+
+# if len(sys.argv) > 0:
+# 	#rides_per_day = getRideCountByDay(sys.argv[1])
+# 	#print(rides_per_day)
+# 	#print(rides_per_day)
+# 	#geRideCountByUser()
+# 	#getCountByVehicleType()
+# 	#print(getCountByVehicleType())
+# 	#getTotalMileageByVehicleType()
+# 	#getRideMileageDistribution()
+# 	# s, e = getTopLocsByVolume(5)
+# 	# print(s)
+# 	#geRideCountByUser()
+# 	#getCountByVehicleType()
+# 	#getTotalMileageByVehicleType()
+# 	#getRideMileageDistribution()
+# 	#getTopLocsByVolume(4)
+# else:
+# 	print("usage: scoot.py <group-by>")
 
 
 
