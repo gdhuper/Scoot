@@ -4,10 +4,12 @@ from collections import defaultdict
 import seaborn as sns
 import matplotlib.pyplot as plt
 from datetime import datetime as dt
+from dateutil import rrule
 import sys
 from mpl_toolkits.basemap import Basemap
 import matplotlib.dates as mdates
 import matplotlib.cbook as cbook
+import calendar as cal
 
 
 
@@ -16,14 +18,24 @@ scoot_rides_test_df = pd.read_csv('scoot_rides_test.csv')
 
 #another dataframe to store records whenre scoot_moved = True
 scoot_rides_if_moved_df = scoot_rides_test_df[scoot_rides_test_df['scoot_moved'] == 't']
+pd.options.mode.chained_assignment = None
 
 #parse date from string object
-def parseDate(datetime):
+def parseDate(datetime, groupBy):
 	if datetime == '':
 		return None
 	else:
-		print(datetime.split(" ")[0] + " : " +  datetime.split(" ")[1] )
-		#return dt.strptime(date, '%m/%d/%Y').date()
+		if groupBy == "d":
+			return dt.strptime(datetime.split(" ")[0], '%m/%d/%Y').date()
+		elif groupBy == "h":
+			time = datetime.split(" ")[1]
+			HM = time.split(":")[0]
+			return dt.strptime(HM, '%H')
+		elif groupBy == 'w':
+			date = dt.strptime(datetime.split(" ")[0], '%m/%d/%Y').date()
+			return cal.day_name[date.weekday()]
+		else:
+			print("Select valid entity: <h - hours, d - day, w - weekday>")
 
 
 #Helper method to get miles from odometer reading
@@ -31,15 +43,35 @@ def getMiles(start_odometer, end_odometer):
 	return abs(end_odometer - start_odometer)
 
 
+#Helper method to standardize rides on a day in a week
+def standardizeWeekCount(value):
+	startDate = parseDate(scoot_rides_test_df['start_time_local'].iloc[0], "d")
+	endDate = parseDate(scoot_rides_test_df['start_time_local'].iloc[-1], "d")
+	total_weeks = rrule.rrule(rrule.WEEKLY, dtstart=startDate, until=endDate)
+	return int(value / total_weeks.count())
+
+def standardizeRidesPerHour(rides):
+	return int(rides / 24)
+
 
 #Gets ride count for each day if scoot_moved == True
-def getRideCountByDay():
-	scoot_rides_by_day_df = scoot_rides_test_df[scoot_rides_test_df['scoot_moved'] == 't']
-	scoot_rides_by_day_df['start_date'] = scoot_rides_if_moved_df['start_time_local'].apply(lambda d: parseDate(d))
-	print(pd.value_counts(scoot_rides_by_day_df['start_date'].values).sort_index())
-	return pd.value_counts(scoot_rides_by_day_df['start_date'].values).sort_index()
-
-
+# Returns Ride count for each day
+# param: groupby (optional), to get rides per hour
+def getRideCountByDay(groupBy):
+	scoot_rides_if_moved_df.loc[: ,"start_date"]= scoot_rides_if_moved_df['start_time_local'].apply(lambda d: parseDate(d, groupBy))
+	if groupBy == "d":
+		return pd.value_counts(scoot_rides_if_moved_df['start_date'].values).sort_index()
+	elif groupBy == "h":
+		#return pd.value_counts(scoot_rides_if_moved_df['start_date'].values).sort_index()
+		temp = pd.value_counts(scoot_rides_if_moved_df['start_date'].values).sort_index()
+		temp = temp.to_frame()
+		temp.loc[:, 0] = temp[0].apply(lambda x: standardizeRidesPerHour(x))
+		return temp
+	elif groupBy == "w":
+		temp = pd.value_counts(scoot_rides_if_moved_df['start_date'].values).sort_index()
+		temp = temp.to_frame()
+		temp.loc[:, 0] = temp[0].apply(lambda x: standardizeWeekCount(x))
+		return temp
 
 def geRideCountByUser():
 	scoot_rides_by_user_df = scoot_rides_test_df[scoot_rides_test_df['scoot_moved'] == 't']
@@ -84,15 +116,17 @@ def getLocsByTime(hour):
 
 
 
-if len(sys.argv) == 1:
-	getRideCountByDay()
+if len(sys.argv) > 1:
+	rides_per_day = getRideCountByDay(sys.argv[1])
+	print(rides_per_day)
+	#print(rides_per_day)
 	#geRideCountByUser()
 	#getCountByVehicleType()
 	#getTotalMileageByVehicleType()
 	#getRideMileageDistribution()
 	#getTopLocsByVolume(4)
 else:
-	print("usage: scoot.py")
+	print("usage: scoot.py <group-by>")
 
 
 
