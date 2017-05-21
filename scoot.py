@@ -58,7 +58,7 @@ def standardizeRidesPerHour(rides):
 	return int(rides / 24)
 
 
-#Gets ride count for each day if scoot_moved == True
+# Gets ride count for each day if scoot_moved == True
 # Returns Ride count for each day
 # param: groupby (optional), to get rides per hour
 def getRideCountByDay(groupBy):
@@ -78,10 +78,27 @@ def getRideCountByDay(groupBy):
 		temp.loc[:, 0] = temp[0].apply(lambda x: standardizeWeekCount(x))
 		return temp
 
+# Gets ride count by user
 def geRideCountByUser():
 	scoot_rides_if_moved_df['user_count'] = pd.value_counts(scoot_rides_if_moved_df['user_id'].values)
-	
 	return pd.value_counts(scoot_rides_if_moved_df['user_id'].values)
+
+# gets top locations for users with most ride counts
+def getLocsOfUserRideCount():
+	user_ride_count = geRideCountByUser()
+	top_20_users = user_ride_count.head(5)
+	lowest_20_users = user_ride_count.tail(20)
+
+	top_start_loc_latLon = scoot_rides_if_moved_df[scoot_rides_test_df['user_id'].isin(top_20_users.index)]
+	top_end_loc_latLon = scoot_rides_if_moved_df[scoot_rides_test_df['user_id'].isin(top_20_users.index)]
+
+	lowest_start_loc_latLon = scoot_rides_if_moved_df[scoot_rides_test_df['user_id'].isin(lowest_20_users.index)]
+	lowest_end_loc_latLon = scoot_rides_if_moved_df[scoot_rides_test_df['user_id'].isin(lowest_20_users.index)]
+
+	top_start_lat, top_start_lon, top_end_lat, top_end_lon = top_start_loc_latLon['start_lat'], top_start_loc_latLon['start_lon'], top_end_loc_latLon['end_lat'], top_end_loc_latLon['end_lon']
+	low_start_lat, low_start_lon, low_end_lat, low_end_lon = lowest_start_loc_latLon['start_lat'], lowest_start_loc_latLon['start_lon'], lowest_end_loc_latLon['end_lat'], lowest_end_loc_latLon['end_lon']
+
+	return top_start_lat, top_start_lon, top_end_lat, top_end_lon, low_start_lat, low_start_lon, low_end_lat, low_end_lon
 
 
 def getCountByVehicleType():
@@ -105,32 +122,60 @@ def getTopLocsByVolume(numberOfLocs):
 	return top_start_loc, top_end_loc
 
 
+# get start and end coordinates (lat and lon ) for top locations
+def latLongForTopLocs(numlocs):
+	top_start_loc, top_end_loc = getTopLocsByVolume(numlocs)
+	# get coordinated for top locations
+	top_start_loc_latLon = scoot_rides_if_moved_df[scoot_rides_test_df['start_location_id'].isin(top_start_loc.index)]
+	top_end_loc_latLon = scoot_rides_if_moved_df[scoot_rides_test_df['end_location_id'].isin(top_end_loc.index)]
+
+	return top_start_loc_latLon['start_lat'], top_start_loc_latLon['start_lon'], top_end_loc_latLon['end_lat'], top_end_loc_latLon['end_lon']
+
+
+
 def getLatLong():
 	return scoot_rides_if_moved_df['start_lat'], scoot_rides_if_moved_df['start_lon']
 	
 	
 
+#getLocsOfUserRideCount()
 
 
 
+#rides_per_day = getRideCountByDay(sys.argv[1])
+# dic = {} 
+# indices = ride_count_user.index
+# vals = ride_count_user.values.ravel()
+# for key, val in zip(indices, vals):
+# 	dic[key] = val
 
 
+# print("{:<8} {:<15}".format('User Id', 'Ride Count'))
+# for k in dic:
+# 	label = k
+# 	num = dic[k]
+# 	print("{:<8} {:<15}".format(label, num))
+	
 # if len(sys.argv) > 0:
-# 	rides_per_day = getRideCountByDay(sys.argv[1])
-# 	print(rides_per_day)
+# 	#latLongForTopLocs(5)
+
+# 	# start, end = getTopLocsByVolume(5)
+# 	# print(start.index, end)
+
+
 # 	#print(rides_per_day)
 # 	#geRideCountByUser()
-# 	#getCountByVehicleType()
-# 	#print(getCountByVehicleType())
-# 	#getTotalMileageByVehicleType()
-# 	#getRideMileageDistribution()
-# 	# s, e = getTopLocsByVolume(5)
-# 	# print(s)
-# 	#geRideCountByUser()
-# 	#getCountByVehicleType()
-# 	#getTotalMileageByVehicleType()
-# 	#getRideMileageDistribution()
-# 	#getTopLocsByVolume(4)
+	#getCountByVehicleType()
+	#print(getCountByVehicleType())
+	#getTotalMileageByVehicleType()
+	#getRideMileageDistribution()
+	# s, e = getTopLocsByVolume(5)
+	# print(s)
+	#geRideCountByUser()
+	#getCountByVehicleType()
+	#getTotalMileageByVehicleType()
+	#getRideMileageDistribution()
+	#getTopLocsByVolume(4)
 # else:
 # 	print("usage: scoot.py <group-by>")
 

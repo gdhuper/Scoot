@@ -5,10 +5,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import datetime
 import numpy as np
-
+from mpl_toolkits.basemap import Basemap
 import matplotlib.dates as mdates
 import matplotlib.cbook as cbook
 from datetime import datetime as dt
+import plotly.plotly as py
+import plotly
+plotly.tools.set_credentials_file(username='gopdhuper', api_key='5jMdPpyquzqza3WeSLO9')
+from plotly.graph_objs import *
 from pylab import rcParams
 rcParams['figure.figsize'] = 13, 7
 
@@ -105,15 +109,162 @@ def drawRideByDay():
 	plt.show()
 
 
-def drawCountByUser():
-	user_count = sc.geRideCountByUser()
-	print(user_count)
+def drawHotSpotsForTopUsers():
+	#lat, lon = sc.getLatLong()
+	top_start_lat, top_start_lon, top_end_lat, top_end_lon, low_start_lat, low_start_lon, low_end_lat, low_end_lon = sc.getLocsOfUserRideCount()
+		
+	mapbox_access_token = 'pk.eyJ1IjoiZ29wZGh1cGVyIiwiYSI6ImNqMnkxcHVtdzAxNDIycW1rNDNieHM0N2MifQ.qI0GSdz260V22vUG2CfjGw'
+
+	data_start_top = Scattermapbox(lat=top_start_lat.tolist(),
+			lon=top_start_lon.tolist(),
+	        mode='markers',
+	        marker=Marker(
+	            size=3,
+	            color="blue"
+	        ),
+	        text=['Top Starting Point'],
+	        
+	    )
+	data_end_top =  Scattermapbox(lat=top_end_lat.tolist(),
+        	lon=top_end_lon.tolist(),
+	        mode='markers',
+	        marker=Marker(
+	            size=3,
+	            color="red"
+	        ),
+	       	text=['Top Ending Point'],
+
+	    )
+	data_start_low = Scattermapbox(lat=low_start_lat.tolist(),
+			lon=low_start_lon.tolist(),
+	        mode='markers',
+	        marker=Marker(
+	            size=3,
+	            color="cyan"
+	        ),
+	        text=['Lowest Starting Point'],
+	        
+	    )
+	data_end_low =  Scattermapbox(lat=low_end_lat.tolist(),
+        	lon=low_end_lon.tolist(),
+	        mode='markers',
+	        marker=Marker(
+	            size=3,
+	            color="magenta"
+	        ),
+	       	text=['Lowest Ending Point'],
+
+	    )
+	data = Data([data_start_top, data_end_top, data_start_low, data_end_low])
+
+	layout = Layout(
+	    autosize=True,
+	    hovermode='closest',
+	    mapbox=dict(
+	        accesstoken=mapbox_access_token,
+	        bearing=0,
+	        center=dict(
+	            lat=37.760139,
+	            lon=-122.443373
+	        ),
+	        pitch=0,
+	        zoom=10
+	    ),
+	   
+	)
+
+	fig = dict(data=data, layout=layout)
+	py.plot(fig, filename='Multiple Mapbox')
 
 
 
-drawRidePerHourHist()
+# draws hist for ride count by vehicle type 
+def drawRideCountByVehicleType():
+	df = sc.getCountByVehicleType()
+	print(df.index)
+
+	xVals = df.values.ravel()
+	dic = {}
+	for key, val in zip(xVals, df.index.get_values()):
+		dic[val] = key
+
+	objects = ('1', '3', '4', '5', '6', '7')
+	y_pos = np.arange(len(objects))
+	performance = [dic[1], dic[3], dic[4], dic[5], dic[6],dic[7]]
+	plt.bar(y_pos, performance, align='center', alpha=0.9)
+	plt.xticks(y_pos, objects, rotation='vertical')
+	plt.ylabel('Ride Count --->')
+	plt.xlabel('<-- Vehicle ID --->')
+	plt.subplots_adjust(bottom=0.15)
+	
+	plt.title('Ride count by Vehicle type')
+	plt.show()
+
+    
+
+def drawHotSpots():
+	#lat, lon = sc.getLatLong()
+	start_lat, start_lon, end_lat, end_lon = sc.latLongForTopLocs(5)
+		
+	mapbox_access_token = 'pk.eyJ1IjoiZ29wZGh1cGVyIiwiYSI6ImNqMnkxcHVtdzAxNDIycW1rNDNieHM0N2MifQ.qI0GSdz260V22vUG2CfjGw'
+
+	data_start = Scattermapbox(lat=start_lat.tolist(),
+			lon=start_lon.tolist(),
+	        mode='markers',
+	        marker=Marker(
+	            size=3,
+	            color="blue"
+	        ),
+	        text=['Starting Point'],
+	        
+	    )
+	data_end =  Scattermapbox(lat=end_lat.tolist(),
+        	lon=end_lon.tolist(),
+	        mode='markers',
+	        marker=Marker(
+	            size=3,
+	            color="red"
+	        ),
+	       	text=['Ending Point'],
+
+	    )
+	data = Data([data_start, data_end])
+
+	layout = Layout(
+	    autosize=True,
+	    hovermode='closest',
+	    mapbox=dict(
+	        accesstoken=mapbox_access_token,
+	        bearing=0,
+	        center=dict(
+	            lat=37.760139,
+	            lon=-122.443373
+	        ),
+	        pitch=0,
+	        zoom=10
+	    ),
+	   
+	)
+
+
+
+	fig = dict(data=data, layout=layout)
+	py.plot(fig, filename='Multiple Mapbox')
+
+drawRideCountByVehicleType()
+# drawHotSpotsForTopUsers()
 
 #drawCountByUser()
+#drawRidePerHourHist()
+
+#drawHotSpots()
+
+#drawRideCountByVehicleType()
+
+#drawCountByUser()
+
+#drawRidePerHourHist()
+
 
 
 #drawRideByDay()
