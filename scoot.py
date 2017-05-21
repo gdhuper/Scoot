@@ -28,6 +28,7 @@ def parseDate(datetime, groupBy):
 		return None
 	else:
 		if groupBy == "d":
+			#print(dt.strptime(datetime.split(" ")[0], '%m/%d/%Y').date())
 			return dt.strptime(datetime.split(" ")[0], '%m/%d/%Y').date()
 		elif groupBy == "h":
 			time = datetime.split(" ")[1]
@@ -61,14 +62,16 @@ def standardizeRidesPerHour(rides):
 # Returns Ride count for each day
 # param: groupby (optional), to get rides per hour
 def getRideCountByDay(groupBy):
-	scoot_rides_if_moved_df.loc[: ,"start_date"]= scoot_rides_if_moved_df['start_time_local'].apply(lambda d: parseDate(d, groupBy))
+	scoot_rides_if_moved_df["start_date"]= scoot_rides_if_moved_df['start_time_local'].apply(lambda d: parseDate(d, groupBy))
 	if groupBy == "d":
 		return pd.value_counts(scoot_rides_if_moved_df['start_date'].values).sort_index()
+
 	elif groupBy == "h":
 		temp = pd.value_counts(scoot_rides_if_moved_df['start_date'].values).sort_index()
 		temp = temp.to_frame()
 		temp.loc[:, 0] = temp[0].apply(lambda x: standardizeRidesPerHour(x))
 		return temp
+
 	elif groupBy == "w":
 		temp = pd.value_counts(scoot_rides_if_moved_df['start_date'].values).sort_index()
 		temp = temp.to_frame()
@@ -77,6 +80,7 @@ def getRideCountByDay(groupBy):
 
 def geRideCountByUser():
 	scoot_rides_if_moved_df['user_count'] = pd.value_counts(scoot_rides_if_moved_df['user_id'].values)
+	
 	return pd.value_counts(scoot_rides_if_moved_df['user_id'].values)
 
 
@@ -112,8 +116,8 @@ def getLatLong():
 
 
 # if len(sys.argv) > 0:
-# 	#rides_per_day = getRideCountByDay(sys.argv[1])
-# 	#print(rides_per_day)
+# 	rides_per_day = getRideCountByDay(sys.argv[1])
+# 	print(rides_per_day)
 # 	#print(rides_per_day)
 # 	#geRideCountByUser()
 # 	#getCountByVehicleType()
