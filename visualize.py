@@ -4,17 +4,22 @@ import matplotlib.pyplot as plt; plt.rcdefaults()
 import numpy as np
 import matplotlib.pyplot as plt
 import datetime
+import matplotlib.mlab as mlab
 import numpy as np
+import seaborn as sns
 from mpl_toolkits.basemap import Basemap
 import matplotlib.dates as mdates
 import matplotlib.cbook as cbook
 from datetime import datetime as dt
 import plotly.plotly as py
 import plotly
-plotly.tools.set_credentials_file(username='gopdhuper', api_key='5jMdPpyquzqza3WeSLO9')
 from plotly.graph_objs import *
 from pylab import rcParams
 rcParams['figure.figsize'] = 13, 7
+
+#replace plotly usename and api_key to draw a graph (will not work since this is my username; need to be logged in as user specified in credentials)
+plotly.tools.set_credentials_file(username='gopdhuper', api_key='5jMdPpyquzqza3WeSLO9')
+
 
 
 
@@ -77,7 +82,6 @@ def drawRidePerHourHist():
 # draws line graph for rides per day from Jan, 2016 - May, 2017
 def drawRideByDay():
 	df = sc.getRideCountByDay("d")
-	datafile = cbook.get_sample_data('goog.npy')
 	
 
 	years = mdates.YearLocator()   
@@ -113,7 +117,7 @@ def drawHotSpotsForTopUsers():
 	#lat, lon = sc.getLatLong()
 	top_start_lat, top_start_lon, top_end_lat, top_end_lon, low_start_lat, low_start_lon, low_end_lat, low_end_lon = sc.getLocsOfUserRideCount()
 		
-	mapbox_access_token = 'pk.eyJ1IjoiZ29wZGh1cGVyIiwiYSI6ImNqMnkxcHVtdzAxNDIycW1rNDNieHM0N2MifQ.qI0GSdz260V22vUG2CfjGw'
+	mapbox_access_token = 'pk.eyJ1IjoiZ29wZGh1cGVyIiwiYSI6ImNqMnpkbmg4ZzAwNzIzM3FpNWV0OGQ0YXYifQ.NEcJOsCugDOQJz-sGdq2sg'
 
 	data_start_top = Scattermapbox(lat=top_start_lat.tolist(),
 			lon=top_start_lon.tolist(),
@@ -196,14 +200,69 @@ def drawRideCountByVehicleType():
 	plt.ylabel('Ride Count --->')
 	plt.xlabel('<-- Vehicle ID --->')
 	plt.subplots_adjust(bottom=0.15)
-	
+
 	plt.title('Ride count by Vehicle type')
 	plt.show()
 
-    
+# draws hist for ride count by vehicle type 
+def drawMileageByVehicleType():
+	df = sc.getTotalMileageByVehicleType()
+	print(df.index)
 
+	xVals = df.values.ravel()
+	dic = {}
+	for key, val in zip(xVals, df.index.get_values()):
+		dic[val] = key
+
+	objects = ('1', '3', '4', '5', '6', '7')
+	y_pos = np.arange(len(objects))
+	performance = [dic[1], dic[3], dic[4], dic[5], dic[6],dic[7]]
+	plt.bar(y_pos, performance, align='center', alpha=0.9)
+	plt.xticks(y_pos, objects, rotation='vertical')
+	plt.ylabel('Mileage --->')
+	plt.xlabel('<-- Vehicle ID --->')
+	plt.subplots_adjust(bottom=0.15)
+
+	plt.title('Total Mileage by Vehicle type')
+	plt.show()
+
+# draws hist for ride count by vehicle type 
+def drawMileageDistribution():
+	df = sc.getRideMileageDistribution()
+
+	xvals = []
+	yvals = []
+	for k in df:
+		xvals.append(k)
+		yvals.append(df[k])
+	
+
+	fig, ax = plt.subplots()
+
+	ax.plot(xvals, yvals, color="red")
+	fig.subplots_adjust(bottom=0.2)
+
+
+	rcParams['xtick.major.pad']='8'	
+
+	datemin = 0 #starting mile range
+	
+	datemax = 9 #ending mile range
+
+	ax.set_xlim(datemin, datemax)
+	ax.set_xlabel("<-- Miles -->")
+	ax.set_ylabel("Ride Count -->")
+	ax.set_title("Distribution of Ride Mileage")
+
+	fig.autofmt_xdate()
+	plt.xticks(rotation='horizontal')
+
+	plt.show()
+
+
+    
+# Draws hot spots on map using plotly. (will only work with a valid access token)
 def drawHotSpots():
-	#lat, lon = sc.getLatLong()
 	start_lat, start_lon, end_lat, end_lon = sc.latLongForTopLocs(5)
 		
 	mapbox_access_token = 'pk.eyJ1IjoiZ29wZGh1cGVyIiwiYSI6ImNqMnkxcHVtdzAxNDIycW1rNDNieHM0N2MifQ.qI0GSdz260V22vUG2CfjGw'
@@ -246,28 +305,18 @@ def drawHotSpots():
 	   
 	)
 
-
-
 	fig = dict(data=data, layout=layout)
 	py.plot(fig, filename='Multiple Mapbox')
 
-drawRideCountByVehicleType()
-# drawHotSpotsForTopUsers()
 
-#drawCountByUser()
-#drawRidePerHourHist()
-
-#drawHotSpots()
-
-#drawRideCountByVehicleType()
-
-#drawCountByUser()
-
-#drawRidePerHourHist()
-
-
-
-#drawRideByDay()
 
 
 # drawWeekDayHist()
+drawRidePerHourHist()
+# drawRideByDay()
+# drawHotSpotsForTopUsers()
+# drawHotSpots()
+# drawMileageDistribution()
+# drawRidePerHourHist()
+# drawRideCountByVehicleType()
+# drawCountByUser()

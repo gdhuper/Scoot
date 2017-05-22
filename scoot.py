@@ -78,6 +78,8 @@ def getRideCountByDay(groupBy):
 		temp.loc[:, 0] = temp[0].apply(lambda x: standardizeWeekCount(x))
 		return temp
 
+
+
 # Gets ride count by user
 def geRideCountByUser():
 	scoot_rides_if_moved_df['user_count'] = pd.value_counts(scoot_rides_if_moved_df['user_id'].values)
@@ -101,21 +103,26 @@ def getLocsOfUserRideCount():
 	return top_start_lat, top_start_lon, top_end_lat, top_end_lon, low_start_lat, low_start_lon, low_end_lat, low_end_lon
 
 
+# gets ride count by vehicle type
 def getCountByVehicleType():
 	scoot_rides_if_moved_df['count_by_vehicle_type'] = pd.value_counts(scoot_rides_if_moved_df['vehicle_type_id'].values)
 	return pd.value_counts(scoot_rides_test_df['vehicle_type_id'].values)
 
 
+# gets total mileage by vehicle type
 def getTotalMileageByVehicleType():
 	scoot_rides_if_moved_df['mileage'] = scoot_rides_if_moved_df.apply(lambda row: getMiles(row['start_odometer'], row['end_odometer']), axis=1)
 	return scoot_rides_if_moved_df.groupby(by=['vehicle_type_id'])['mileage'].sum()
 	
-
+# gets number of rides for each mile distribution
 def getRideMileageDistribution():
 	scoot_rides_if_moved_df['mileage'] = scoot_rides_if_moved_df.apply(lambda row: getMiles(row['start_odometer'], row['end_odometer']), axis=1)
-	return scoot_rides_if_moved_df['mileage']
+	dic = {}
+	for i in range(0, 10):
+		dic[i] = len(scoot_rides_if_moved_df[(scoot_rides_if_moved_df['mileage'] >= i) &  (scoot_rides_if_moved_df['mileage'] <= i+1)]['mileage'])
+	return dic
 
-
+# gets top locations coordinates
 def getTopLocsByVolume(numberOfLocs):
 	top_start_loc = pd.value_counts(scoot_rides_if_moved_df['start_location_id']).head(numberOfLocs)
 	top_end_loc = pd.value_counts(scoot_rides_if_moved_df['end_location_id']).head(numberOfLocs)
@@ -133,28 +140,48 @@ def latLongForTopLocs(numlocs):
 
 
 
-def getLatLong():
-	return scoot_rides_if_moved_df['start_lat'], scoot_rides_if_moved_df['start_lon']
+count = getRideCountByDay("w")
+print(count)
+
 	
-	
+
+
+# s = getCountByVehicleType()
+# print("Id.  Ride Count")
+# print(s)
+
+# loc, loc2 = getTopLocsByVolume(5)
+# print("Top 5 starting locations:")
+# print("Loc.ID   Count")
+# print(loc)
+# print("Top 5 ending locations:")
+# print("Loc.ID   Count")
+# print(loc2)
+# ride = getRideMileageDistribution()
+# print(ride)
 
 #getLocsOfUserRideCount()
+# temp = getRideMileageDistribution()
+# print(temp)
 
 
-
-#rides_per_day = getRideCountByDay(sys.argv[1])
+# rides_per_day = getRideCountByDay(sys.argv[1])
 # dic = {} 
-# indices = ride_count_user.index
-# vals = ride_count_user.values.ravel()
+# indices = rides_per_day.index
+# vals = rides_per_day.values.ravel()
 # for key, val in zip(indices, vals):
-# 	dic[key] = val
+# 	tempkey = str(key).split(" ")[1]
+# 	time = tempkey.split(":")[0] + ":" + tempkey.split(":")[1]
+# 	dic[time] = val
 
 
-# print("{:<8} {:<15}".format('User Id', 'Ride Count'))
+# print('Hour:            ', end="")
 # for k in dic:
-# 	label = k
-# 	num = dic[k]
-# 	print("{:<8} {:<15}".format(label, num))
+# 	print(k, end='|')
+# print("")
+# print("Avg. Ride Count: ", end="")
+# for k in dic:
+# 	print('{:>5}'.format(dic[k]), end='')
 	
 # if len(sys.argv) > 0:
 # 	#latLongForTopLocs(5)
