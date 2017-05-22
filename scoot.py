@@ -140,82 +140,42 @@ def latLongForTopLocs(numlocs):
 
 
 
-count = getRideCountByDay("w")
-print(count)
-
-	
-
-
-# s = getCountByVehicleType()
-# print("Id.  Ride Count")
-# print(s)
-
-# loc, loc2 = getTopLocsByVolume(5)
-# print("Top 5 starting locations:")
-# print("Loc.ID   Count")
-# print(loc)
-# print("Top 5 ending locations:")
-# print("Loc.ID   Count")
-# print(loc2)
-# ride = getRideMileageDistribution()
-# print(ride)
-
-#getLocsOfUserRideCount()
-# temp = getRideMileageDistribution()
-# print(temp)
+# print ride count by day, week or hours
+count_by_week = getRideCountByDay("w")
+print(count_by_week)
+# count_by_hour = getRideCountByDay("h")
+# print(count_by_hour)
+# count_by_day = getRideCountByDay("d")
+# print(count_by_day)
 
 
-# rides_per_day = getRideCountByDay(sys.argv[1])
-# dic = {} 
-# indices = rides_per_day.index
-# vals = rides_per_day.values.ravel()
-# for key, val in zip(indices, vals):
-# 	tempkey = str(key).split(" ")[1]
-# 	time = tempkey.split(":")[0] + ":" + tempkey.split(":")[1]
-# 	dic[time] = val
+# #prints ride count by user
+# count_by_user = geRideCountByUser()
+# prit(count_by_user)
 
+# # gets locations of top users
+# locations_of_top_users = getLocsOfUserRideCount()
+# print(locations_of_top_users)
 
-# print('Hour:            ', end="")
-# for k in dic:
-# 	print(k, end='|')
-# print("")
-# print("Avg. Ride Count: ", end="")
-# for k in dic:
-# 	print('{:>5}'.format(dic[k]), end='')
-	
-# if len(sys.argv) > 0:
-# 	#latLongForTopLocs(5)
+# #gets ride count by vehicle type
+# ride_count_vehicle_type = getCountByVehicleType()
+# print(ride_count_vehicle_type)
 
-# 	# start, end = getTopLocsByVolume(5)
-# 	# print(start.index, end)
+# #gets ride mileage by vehicle type
+# ride_mileage_vehicle_type = getTotalMileageByVehicleType()
+# print(ride_mileage_vehicle_type)
 
+# #gets ride mileage distribution 
+# mile_dist = getRideMileageDistribution()
+# print(mile_dist)
 
-# 	#print(rides_per_day)
-# 	#geRideCountByUser()
-	#getCountByVehicleType()
-	#print(getCountByVehicleType())
-	#getTotalMileageByVehicleType()
-	#getRideMileageDistribution()
-	# s, e = getTopLocsByVolume(5)
-	# print(s)
-	#geRideCountByUser()
-	#getCountByVehicleType()
-	#getTotalMileageByVehicleType()
-	#getRideMileageDistribution()
-	#getTopLocsByVolume(4)
-# else:
-# 	print("usage: scoot.py <group-by>")
+# #getse top locations by volume
+# top_locs = getTopLocsByVolume(5)
+# print(top_locs)
 
-
-
-
-
-
-
-
-
-
-
+# #gets coordinated for top locaitons
+# top_locs =latLongForTopLocs(5)
+# print(top_locs)
 
 
 
